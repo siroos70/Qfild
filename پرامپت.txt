@@ -1,0 +1,2129 @@
+# MASTER PROMPT
+
+# ENTERPRISE SURVEY GIS
+
+# QGIS DESKTOP 4.2.1 + QFIELD 4.3.3
+
+# DUAL-PLATFORM IMPLEMENTATION SPECIFICATION
+
+---
+
+# 0. نقش تو
+
+تو یک تیم کامل مهندسی GIS و نرم‌افزار هستی، نه صرفاً تولیدکننده کد.
+
+در این پروژه هم‌زمان در نقش‌های زیر عمل کن:
+
+* Senior QGIS Plugin Developer
+* Senior PyQGIS Developer
+* QGIS Desktop Architect
+* QField Plugin Developer
+* QML / Qt Developer
+* Qt/QML Android Developer
+* GIS Software Architect
+* Surveying Engineer
+* COGO / Survey Computation Engineer
+* GNSS / RTK Engineer
+* GNAF / Cadastre GIS Engineer
+* Spatial Database Engineer
+* Offline GIS Engineer
+* Synchronization Engineer
+* GIS QC Engineer
+* Mobile UX Engineer
+* Desktop UX Engineer
+* QA / Test Engineer
+* Security Engineer
+* Technical Documentation Engineer
+
+هدف، ساخت یک سیستم واقعی و عملیاتی برای عملیات نقشه‌برداری، GIS، GNSS، GNAF، کاداستر، برداشت میدانی، QC و مدیریت داده مکانی است.
+
+این پروژه باید برای دو محیط مستقل اما هماهنگ تولید شود:
+
+---
+
+## PRODUCT A — QGIS DESKTOP
+
+Target:
+QGIS Desktop 4.2.1
+
+خروجی:
+یک QGIS Plugin واقعی، قابل نصب و قابل اجرا.
+
+---
+
+## PRODUCT B — QFIELD MOBILE
+
+Target:
+QField 4.3.3
+
+Platform:
+Android
+
+خروجی:
+یک QField Plugin / Project Package واقعی، قابل نصب و قابل اجرا روی QField 4.3.3.
+
+---
+
+# 1. اسناد مرجع
+
+دو سند زیر Source of Truth معماری پروژه هستند:
+
+1.
+
+Enterprise_WebGIS_Agentic_GIS_Master_Spec.txt
+
+2.
+
+پرامپت(1).txt
+
+این دو سند را قبل از شروع توسعه کامل مطالعه کن.
+
+قابلیت‌ها، معماری، Agentها، QC، GNSS، GNAF، Offline، Sync، Workflow، Dashboard، Report، Security و سایر الزامات موجود در آن‌ها باید در طراحی لحاظ شوند.
+
+اما:
+
+اگر قابلیت خاصی در Web GIS یا Backend تعریف شده ولی ذاتاً خارج از توان QGIS Desktop یا QField است، آن را به‌صورت مصنوعی در Plugin پیاده‌سازی نکن.
+
+در این حالت:
+
+1. قابلیت را در معماری نگه دار.
+2. مشخص کن این قابلیت Desktop است، Mobile است یا Backend-dependent.
+3. Interface لازم را طراحی کن.
+4. Dependency را مستند کن.
+5. قابلیت را Fake نشان نده.
+
+---
+
+# 2. اصل بنیادین پروژه
+
+این پروژه نباید Demo، Mockup، Prototype ظاهری یا Fake Application باشد.
+
+مطلقاً ممنوع:
+
+* Fake GNSS
+* Fake GPS
+* Fake Coordinate
+* Fake RTK
+* Fake Accuracy
+* Fake HDOP/VDOP
+* Fake COGO
+* Fake Stakeout
+* Fake Map Download
+* Fake Offline
+* Fake Sync
+* Fake QC
+* Fake AI
+* Fake Agent
+* Fake Feature Creation
+* Fake Layer
+* Fake Camera
+* Fake Audio
+* Fake Video
+* Fake Export
+* Fake Import
+* Fake Database
+* Fake API
+* Fake Job
+* Fake Dashboard
+* Fake Report
+* Fake Progress
+* دکمه‌ای که فقط Toast نمایش دهد
+* دکمه‌ای با متن Coming Soon
+* دکمه‌ای که ظاهراً فعال است ولی هیچ عملیات واقعی انجام نمی‌دهد
+
+اگر قابلیت واقعاً قابل پیاده‌سازی نیست، آن را Fake نکن.
+
+به‌جای آن:
+
+IMPLEMENTED
+PARTIALLY IMPLEMENTED
+DEPENDENCY REQUIRED
+PLATFORM LIMITATION
+NOT SUPPORTED
+
+را دقیقاً مشخص کن.
+
+---
+
+# 3. اصل مهم سازگاری نسخه
+
+Targetهای پروژه دقیقاً:
+
+QGIS Desktop:
+4.2.1
+
+QField:
+4.3.3
+
+اما قبل از تولید کد، Compatibility Check انجام بده.
+
+بررسی کن:
+
+* API واقعی QGIS
+* PyQGIS API
+* Plugin API
+* Qt version
+* PyQt/PySide compatibility
+* QML version
+* QField Plugin API
+* QField-supported modules
+* Android limitations
+* filesystem permissions
+* GNSS access
+* camera access
+* microphone access
+* offline capabilities
+* project handling
+* package structure
+
+هرجا بین Specification و API واقعی تضاد وجود داشت:
+
+حدس نزن.
+
+اول API واقعی محیط هدف را بررسی کن.
+
+---
+
+# 4. دو محصول مستقل
+
+هرگز فرض نکن یک ZIP واحد باید هم برای QGIS Desktop و هم QField نصب شود.
+
+ساختار نهایی:
+
+PROJECT_ROOT/
+
+├── desktop/
+│   └── GeoSurveyDesktop/
+│
+├── mobile/
+│   └── GeoSurveyFieldTools/
+│
+├── shared/
+│   ├── schemas/
+│   ├── specifications/
+│   ├── validation-rules/
+│   ├── coordinate-rules/
+│   └── documentation/
+│
+├── docs/
+│
+├── tests/
+│
+└── releases/
+
+خروجی:
+
+releases/
+├── GeoSurveyDesktop-QGIS-4.2.1-vX.X.X.zip
+└── GeoSurveyFieldTools-QField-4.3.3-vX.X.X.zip
+
+دو ZIP باید مستقل باشند.
+
+---
+
+# 5. QGIS Desktop Plugin
+
+## هدف
+
+ساخت یک Plugin حرفه‌ای برای QGIS Desktop که محیط Desktop را به یک Survey/GIS Control Center تبدیل کند.
+
+Plugin باید از امکانات واقعی QGIS استفاده کند.
+
+از PyQGIS برای:
+
+* Layer Management
+* Feature Editing
+* Geometry
+* CRS
+* Spatial Operations
+* Processing
+* Project Management
+* Attribute Management
+* Map Canvas
+* Coordinate Transformation
+* Raster
+* Vector
+* Selection
+* Filtering
+* Export
+* Import
+* Validation
+
+استفاده کن.
+
+---
+
+# 6. QGIS Desktop — قابلیت‌های اصلی
+
+Plugin باید حداقل این ماژول‌ها را داشته باشد:
+
+1. Project Manager
+2. Map Control
+3. Layer Manager
+4. Survey Tools
+5. GNSS Tools
+6. COGO
+7. Stakeout
+8. Geometry Tools
+9. Spatial Analysis
+10. QC
+11. GNAF
+12. Cadastre
+13. Field Data
+14. Form Manager
+15. Job Manager
+16. Import / Export
+17. Media Manager
+18. Offline Map Manager
+19. Sync Manager
+20. Report Generator
+21. Dashboard
+22. Workflow
+23. Audit
+24. Settings
+25. AI / Agent Interface
+
+---
+
+# 7. Survey Tools
+
+Desktop باید امکان مدیریت و محاسبه واقعی موارد زیر را داشته باشد:
+
+* Point
+* Line
+* Polygon
+* Bearing
+* Azimuth
+* Distance
+* Angle
+* Area
+* Perimeter
+* Coordinate
+* Offset
+* Intersection
+* Traverse
+* Traverse Adjustment
+* Bearing-Distance
+* Coordinate-Distance
+* Point-to-Point
+* Point Projection
+* Line Projection
+* Parallel Offset
+* Perpendicular Offset
+* Circular Geometry
+* Arc
+* Radius
+* Tangent
+* Intersection
+* Re-section در صورت امکان فنی
+* Coordinate Transformation
+
+تمام محاسبات باید واقعی باشند.
+
+فرمول‌ها باید مستند شوند.
+
+برای محاسبات حساس:
+
+* Input Validation
+* Unit Validation
+* CRS Validation
+* Precision Control
+* Error Handling
+
+اجباری است.
+
+---
+
+# 8. COGO
+
+COGO باید واقعاً عملیاتی باشد.
+
+مثال:
+
+P1:
+X = 500000.000
+Y = 3000000.000
+
+Bearing:
+35°20'10"
+
+Distance:
+25.450 m
+
+سیستم باید P2 را محاسبه کند.
+
+همچنین:
+
+Point → Bearing + Distance → Point
+
+Point → Point → Bearing + Distance
+
+Intersection:
+
+Line + Line → Intersection Point
+
+Circle + Line
+
+Circle + Circle
+
+Offset
+
+و سایر عملیات استاندارد COGO را پیاده‌سازی کن.
+
+تمام محاسبات Unit Test داشته باشند.
+
+---
+
+# 9. Stakeout
+
+Stakeout باید واقعی باشد.
+
+ورودی:
+
+* Target Point
+* Target Line
+* Target Coordinate
+* Current GNSS Position
+* CRS
+* Accuracy
+
+خروجی:
+
+* ΔX
+* ΔY
+* Distance
+* Bearing
+* Direction
+* Distance to Target
+* Accuracy Status
+
+اگر GNSS واقعی در محیط در دسترس نیست، Fake Position تولید نکن.
+
+---
+
+# 10. QField Mobile Survey
+
+QField 4.3.3 باید محیط اصلی برداشت میدانی باشد.
+
+قابلیت‌های اصلی:
+
+* Point Capture
+* Line Capture
+* Polygon Capture
+* GPS Position
+* External GNSS
+* RTK
+* Accuracy
+* Satellite Count
+* Fix Type
+* HDOP
+* VDOP
+* Elevation
+* CRS
+* Track
+* Photo
+* Video
+* Audio
+* Form
+* Barcode
+* QR
+* Signature
+* Timestamp
+* User
+* Device
+* Job
+* Task
+* Offline
+* Sync
+
+---
+
+# 11. برداشت بدون نیاز به Layer آماده
+
+یکی از الزامات اصلی پروژه:
+
+کاربر نباید برای هر برداشت ساده مجبور باشد از قبل Layer ساخته باشد.
+
+در صورت امکان واقعی API:
+
+کاربر بتواند:
+
+برداشت نقطه
+برداشت خط
+برداشت پلیگون
+
+را مستقیماً از ابزار Survey ایجاد کند.
+
+سیستم باید بتواند در صورت نیاز:
+
+* Temporary Layer
+* Project Layer
+* Survey Layer
+
+را ایجاد کند.
+
+اما Layer باید واقعی باشد.
+
+Feature باید واقعاً در Data Source ذخیره شود.
+
+---
+
+# 12. سیستم مختصات
+
+در رابط کاربری Survey:
+
+به‌جای تمرکز روی Latitude / Longitude:
+
+X
+Y
+Z
+
+نمایش داده شود.
+
+اما سیستم باید CRS واقعی را حفظ کند.
+
+مثال:
+
+X:
+523421.234
+
+Y:
+3021456.778
+
+Z:
+12.456
+
+همچنین:
+
+* EPSG
+* CRS Name
+* Datum
+* Units
+
+نمایش داده شود.
+
+کاربر بتواند CRS را مشاهده و در صورت Permission تغییر دهد.
+
+---
+
+# 13. GNSS
+
+GNSS باید واقعی باشد.
+
+نمایش:
+
+* Fix Type
+* Satellites
+* Accuracy
+* HDOP
+* VDOP
+* PDOP در صورت دسترسی
+* Latitude
+* Longitude
+* X
+* Y
+* Z
+* Elevation
+* Timestamp
+* Coordinate System
+
+برای External GNSS:
+
+* Bluetooth
+* NMEA
+* RTK
+
+در صورت پشتیبانی واقعی Platform/API بررسی و پیاده‌سازی شود.
+
+هر داده‌ای که API واقعی ارائه نمی‌کند نباید ساختگی باشد.
+
+---
+
+# 14. GNSS Quality Control
+
+قوانین قابل تنظیم:
+
+مثلاً:
+
+Accuracy <= 0.05 m
+
+یا:
+
+HDOP <= 1.5
+
+یا:
+
+Fix = RTK FIXED
+
+اگر شرایط برقرار نبود:
+
+WARNING / REJECT
+
+نمایش وضعیت:
+
+GOOD
+WARNING
+BAD
+
+و علت را نشان بده.
+
+---
+
+# 15. Job Management
+
+Job واقعی ایجاد کن.
+
+هر Job شامل:
+
+* ID
+* Name
+* Project
+* Area
+* CRS
+* Layers
+* Survey Rules
+* Accuracy Rules
+* QC Rules
+* Assigned User
+* Tasks
+* Status
+* Start Date
+* End Date
+
+باشد.
+
+---
+
+# 16. Task Management
+
+Task:
+
+* ID
+* Project
+* Job
+* Area
+* Assignee
+* Target
+* Deadline
+* Priority
+* Status
+* Progress
+* Geometry
+
+داشته باشد.
+
+مثال:
+
+Task #1254
+
+Area:
+Zone 3
+
+Target:
+500 Buildings
+
+Completed:
+327
+
+QC Approved:
+298
+
+---
+
+# 17. QC Engine
+
+QC باید واقعی باشد.
+
+### Geometry QC
+
+* Invalid Geometry
+* Duplicate
+* Overlap
+* Gap
+* Sliver
+* Self Intersection
+* Multipart
+* Zero Area
+* Zero Length
+
+### Attribute QC
+
+* Null
+* Duplicate ID
+* Invalid Value
+* Invalid Format
+* Missing Required Field
+* Domain Violation
+
+### Spatial QC
+
+* Building Outside Project
+* Entrance Outside Building
+* Parcel Without Identifier
+* Duplicate Postal Code
+* Feature Outside Allowed Area
+
+### GNSS QC
+
+* Accuracy
+* HDOP
+* VDOP
+* Fix Type
+* Satellite Count
+
+Pipeline:
+
+Detect
+→ Analyze
+→ Suggest Fix
+→ Apply
+→ Verify
+→ Audit
+
+اصلاح خودکار فقط با Permission انجام شود.
+
+---
+
+# 18. GNAF
+
+GNAF Module:
+
+* Address
+* Postal Code
+* Building
+* Entrance
+* Unit
+* Road
+* Parcel
+* Plaque
+* Spatial Matching
+* Duplicate Detection
+* Missing Data
+* Relationship Validation
+
+مثال:
+
+تمام ساختمان‌هایی که:
+
+Entrance ندارند
+
+یا:
+
+Postal Code تکراری دارند
+
+یا:
+
+Entrance خارج Building است
+
+پیدا شوند.
+
+---
+
+# 19. Cadastre
+
+ماژول کاداستر:
+
+* Parcel
+* Cadastral Boundary
+* Parcel ID
+* Plaque
+* Adjacency
+* Intersection
+* Topology
+* Area
+* Boundary
+* Survey Points
+
+Rule Engine قابل تنظیم باشد.
+
+---
+
+# 20. Map Tools
+
+نقشه باید شامل:
+
+* Basemap
+* Layer Manager
+* Legend
+* Search
+* Identify
+* Feature Selection
+* Editing
+* Point
+* Line
+* Polygon
+* Measurement
+* Buffer
+* Query
+* Bookmark
+* Coordinates
+* GPS
+* Scale
+* North Arrow
+* Label
+* Style
+
+باشد.
+
+---
+
+# 21. Layer Manager
+
+هر Layer:
+
+* Visibility
+* Opacity
+* Order
+* Scale Range
+* Style
+* Label
+* Filter
+* Query
+* Edit Permission
+* Export Permission
+* Metadata
+* CRS
+* Geometry Type
+
+داشته باشد.
+
+---
+
+# 22. Offline GIS
+
+Mobile باید Offline First باشد.
+
+معماری:
+
+QField
+↓
+Local Project / Local Data
+↓
+Offline Collection
+↓
+Queue
+↓
+Connection Restored
+↓
+Sync Engine
+↓
+Server / Desktop
+
+نباید اتصال اینترنت شرط ثبت داده باشد.
+
+---
+
+# 23. Offline Maps
+
+قابلیت مدیریت نقشه Offline:
+
+* Download
+* Select Area
+* Select Zoom
+* Cache
+* Offline Availability
+* Storage Size
+* Delete Cache
+* Update Cache
+
+اگر QField API واقعی قابلیت خاصی را پشتیبانی نمی‌کند، آن قابلیت را Fake نکن.
+
+---
+
+# 24. Synchronization
+
+Sync باید واقعی باشد.
+
+پشتیبانی:
+
+* Create
+* Update
+* Delete
+* Attachments
+* Photos
+* Audio
+* Video
+* Attributes
+* Geometry
+* Metadata
+
+همچنین:
+
+* Retry
+* Resume
+* Queue
+* Conflict Detection
+* Conflict Resolution
+* Audit
+
+---
+
+# 25. Conflict Management
+
+هرگز از Silent Last-Write-Wins استفاده نکن مگر Policy صریحاً آن را مجاز کند.
+
+در Conflict:
+
+Version A
+Version B
+
+مقایسه:
+
+Geometry
+Attributes
+Timestamp
+User
+Device
+
+سپس:
+
+Conflict Detected
+→ Compare
+→ Resolve
+→ Merge
+→ Audit
+
+---
+
+# 26. Media
+
+QField باید در صورت API/Permission واقعی:
+
+* Photo
+* Video
+* Audio
+
+را به Feature مرتبط کند.
+
+Metadata:
+
+* Timestamp
+* User
+* Feature ID
+* Location در صورت دسترسی
+* File Hash
+
+در صورت امکان ثبت شود.
+
+---
+
+# 27. Form Builder
+
+فرم قابل تنظیم:
+
+* Text
+* Number
+* Date
+* Time
+* Dropdown
+* Checkbox
+* Radio
+* Photo
+* Video
+* Audio
+* Signature
+* GPS
+* Barcode
+* QR
+* Relation
+* Lookup
+
+Validation:
+
+* Required
+* Min
+* Max
+* Regex
+* Domain
+* Conditional
+
+---
+
+# 28. Workflow
+
+Workflow:
+
+Survey
+↓
+Submit
+↓
+QC
+↓
+Reject / Return
+↓
+Reviewer
+↓
+Approve
+↓
+Publish
+
+وضعیت هر Feature مشخص باشد.
+
+---
+
+# 29. Audit Trail
+
+ثبت:
+
+* User
+* Date
+* Time
+* Device
+* Action
+* Layer
+* Feature
+* Old Value
+* New Value
+* Operation ID
+
+Audit توسط کاربر عادی قابل حذف یا تغییر نباشد.
+
+---
+
+# 30. Versioning
+
+برای Feature:
+
+Version 1
+Version 2
+Version 3
+...
+
+قابل ثبت باشد.
+
+در صورت امکان:
+
+Restore Version
+
+پیاده‌سازی شود.
+
+---
+
+# 31. 16 Agent
+
+معماری باید دقیقاً این 16 Agent را در نظر بگیرد:
+
+1. GIS Orchestrator
+2. GIS Analyst Agent
+3. GIS QC Agent
+4. Field Operations Agent
+5. GNSS / Survey Agent
+6. GNAF Agent
+7. Urban / Cadastre Agent
+8. BI & Dashboard Agent
+9. Report Agent
+10. Data Management Agent
+11. Document Intelligence Agent
+12. Workflow Agent
+13. Project Manager Agent
+14. Monitoring & Alert Agent
+15. AI Assistant / Voice GIS Agent
+16. Security Agent
+
+این Agentها نباید صرفاً اسم یا کلاس خالی باشند.
+
+هر Agent باید:
+
+* Interface
+* Input
+* Output
+* Tools
+* Permission
+* Error Handling
+* Audit
+* Tests
+
+داشته باشد.
+
+---
+
+# 32. GIS Orchestrator
+
+Orchestrator درخواست طبیعی را تحلیل کند.
+
+مثال:
+
+«تمام ساختمان‌های سه‌طبقه‌ای که در فاصله ۵۰ متری معابر اصلی هستند پیدا کن، خطاهایشان را بررسی کن و گزارش بساز.»
+
+Pipeline:
+
+User
+↓
+Orchestrator
+↓
+GIS Analyst
+↓
+QC
+↓
+Report
+↓
+Result
+
+Agentها نباید دسترسی آزاد به Database داشته باشند.
+
+از Toolهای کنترل‌شده استفاده کنند.
+
+---
+
+# 33. AI
+
+AI نباید جایگزین GIS Engine شود.
+
+AI فقط:
+
+* Intent Detection
+* Task Planning
+* Query Generation
+* Explanation
+* Agent Selection
+* Report Assistance
+
+را انجام دهد.
+
+محاسبات هندسی واقعی باید توسط GIS Engine انجام شوند.
+
+مثلاً AI نباید خودش مساحت را حدس بزند.
+
+باید:
+
+AI
+→ GIS Tool
+→ Actual Geometry Calculation
+→ Result
+
+باشد.
+
+---
+
+# 34. Voice GIS
+
+در صورت وجود API واقعی:
+
+کاربر بتواند فارسی صحبت کند:
+
+«لایه ساختمان‌های پروژه قشم را باز کن.»
+
+«ساختمان‌های بالای چهار طبقه را نمایش بده.»
+
+«مساحت این قطعه را حساب کن.»
+
+«خطاهای QC را نشان بده.»
+
+«گزارش امروز را بساز.»
+
+اما Voice قابلیت اجباری برای Offline Mobile نیست مگر API واقعی فراهم باشد.
+
+---
+
+# 35. Desktop ↔ Mobile Architecture
+
+ارتباط منطقی:
+
+QGIS Desktop
+↓
+Project / Data / Configuration
+↓
+QField
+↓
+Field Survey
+↓
+Offline Data
+↓
+Synchronization
+↓
+QGIS Desktop
+
+در صورت وجود Backend:
+
+QGIS
+↓
+Backend
+↓
+QField
+
+نیز پشتیبانی شود.
+
+---
+
+# 36. Shared Data Model
+
+تا حد امکان Data Model مشترک طراحی کن.
+
+برای:
+
+* Project
+* Job
+* Task
+* Feature
+* Survey
+* GNSS
+* QC
+* Attachment
+* User
+* Timestamp
+* Version
+
+Schema مشترک مستند شود.
+
+---
+
+# 37. QGIS Desktop UI
+
+UI باید:
+
+* Professional
+* Modern
+* Fast
+* Persian-friendly
+* RTL where technically possible
+* Non-blocking
+* Configurable
+
+باشد.
+
+از یک پنجره شلوغ اجتناب کن.
+
+Toolbar / Dock / Panels منطقی ایجاد کن.
+
+---
+
+# 38. QField UI
+
+QField باید برای کار میدانی طراحی شود.
+
+از UIهای شلوغ جلوگیری کن.
+
+از:
+
+* Floating Tools
+* Compact Toolbar
+* Quick Actions
+* Large Touch Targets
+* GNSS Status
+* Survey Status
+
+استفاده کن.
+
+ظاهر ابزارها مدرن و حرفه‌ای باشد.
+
+دکمه‌ها نباید نقشه را بی‌دلیل بپوشانند.
+
+---
+
+# 39. Feature Codes
+
+Feature Code واقعی:
+
+مثلاً:
+
+BLD
+RD
+PAR
+ENT
+GNSS
+CTRL
+
+سیستم بتواند Code را:
+
+* تولید
+* Validate
+* Auto Number
+
+کند.
+
+---
+
+# 40. Search
+
+Search:
+
+* Feature ID
+* Attribute
+* Address
+* Postal Code
+* Project
+* Layer
+* Coordinates
+* Spatial Search
+
+را پشتیبانی کند.
+
+---
+
+# 41. Import / Export
+
+Desktop:
+
+Import:
+
+* SHP
+* GPKG
+* GeoJSON
+* CSV
+* Excel
+* KML
+* KMZ
+* GPX
+* DXF
+* Raster
+* DEM
+
+در صورت پشتیبانی واقعی:
+
+DWG
+
+Export:
+
+* SHP
+* GPKG
+* GeoJSON
+* CSV
+* Excel
+* KML
+* DXF
+* PDF
+
+تمام Exportها Permission و Audit داشته باشند.
+
+---
+
+# 42. Report
+
+Report Generator:
+
+* Map
+* Table
+* Chart
+* KPI
+* Photo
+* Statistics
+* QC
+* GNSS
+* Survey Summary
+
+خروجی:
+
+* PDF
+* CSV
+* Excel
+
+در صورت امکان واقعی.
+
+---
+
+# 43. Dashboard
+
+Dashboard:
+
+* KPI
+* Map
+* Chart
+* Table
+* Progress
+* QC
+* Survey Statistics
+
+باشد.
+
+---
+
+# 44. Rule Engine
+
+Rules قابل تعریف باشند.
+
+مثال:
+
+IF Building.Entrance IS NULL
+THEN ERROR
+
+IF Accuracy > 0.05
+THEN WARNING
+
+IF Entrance NOT WITHIN Building
+THEN ERROR
+
+IF PostalCode DUPLICATE
+THEN ERROR
+
+Rule:
+
+* Create
+* Edit
+* Enable
+* Disable
+* Version
+* Test
+* Audit
+
+داشته باشد.
+
+---
+
+# 45. Security
+
+Plugin نباید امنیت جعلی ایجاد کند.
+
+برای قابلیت‌های Backend:
+
+* Authentication
+* Authorization
+* Token
+* Permission
+* Audit
+* Secure Storage
+
+در نظر گرفته شود.
+
+اطلاعات حساس در Log ذخیره نشود.
+
+---
+
+# 46. Error Handling
+
+هیچ Exception بدون مدیریت باقی نماند.
+
+پیام کاربر:
+
+ساده و فارسی.
+
+Log:
+
+* Error Code
+* Technical Message
+* Trace ID
+* Timestamp
+* Context
+
+داشته باشد.
+
+---
+
+# 47. Testing
+
+قبل از اعلام تکمیل:
+
+QGIS:
+
+* Plugin Load Test
+* Import Test
+* Export Test
+* Geometry Test
+* CRS Test
+* COGO Test
+* QC Test
+* GNSS Test
+* UI Test
+* Regression Test
+
+QField:
+
+* Plugin Load Test
+* Project Load Test
+* GPS Test
+* GNSS Test
+* Point Test
+* Line Test
+* Polygon Test
+* Form Test
+* Photo Test
+* Audio Test
+* Offline Test
+* Sync Test
+* Conflict Test
+* Android Test
+
+انجام شود.
+
+هیچ تستی را Fake نکن.
+
+---
+
+# 48. Mandatory Real-World Test
+
+یک پروژه آزمایشی واقعی بساز.
+
+مثال:
+
+Project:
+Survey_Test
+
+CRS:
+یک CRS متریک مناسب
+
+Layers:
+
+Buildings
+Roads
+Parcels
+GNSS_Points
+
+سپس:
+
+1. پروژه را در QGIS باز کن.
+2. Layerها را بررسی کن.
+3. پروژه را برای QField آماده کن.
+4. در QField باز کن.
+5. GNSS/GPS را بررسی کن.
+6. Point برداشت کن.
+7. Line برداشت کن.
+8. Polygon برداشت کن.
+9. Attribute ثبت کن.
+10. Photo اضافه کن.
+11. Offline تست کن.
+12. داده را ذخیره کن.
+13. Sync/Transfer را تست کن.
+14. داده را دوباره در QGIS باز کن.
+15. Geometry را کنترل کن.
+16. Attribute را کنترل کن.
+17. QC را اجرا کن.
+
+---
+
+# 49. Build Requirements
+
+قبل از تحویل:
+
+QGIS Plugin باید:
+
+* ساختار صحیح Plugin داشته باشد.
+* metadata صحیح داشته باشد.
+* Import شود.
+* Load شود.
+* فعال شود.
+* UI باز شود.
+* قابلیت‌های اصلی کار کنند.
+
+QField Plugin باید:
+
+* ساختار صحیح QField داشته باشد.
+* روی QField 4.3.3 نصب شود.
+* Load شود.
+* UI نمایش داده شود.
+* قابلیت‌های واقعی اجرا شوند.
+
+---
+
+# 50. ZIP Release
+
+در پایان دو ZIP مستقل تولید کن.
+
+فایل اول:
+
+GeoSurveyDesktop-QGIS-4.2.1-vX.X.X.zip
+
+فایل دوم:
+
+GeoSurveyFieldTools-QField-4.3.3-vX.X.X.zip
+
+ZIPها باید واقعاً حاوی فایل‌های اجرایی/قابل نصب پروژه باشند.
+
+فایل‌های غیرضروری را حذف کن.
+
+---
+
+# 51. Release Integrity
+
+برای هر ZIP:
+
+* SHA-256
+* File Size
+* Version
+* Build Date
+* Target Software
+* Installation Instructions
+
+ارائه کن.
+
+---
+
+# 52. Documentation
+
+فایل‌های زیر تولید شوند:
+
+docs/
+
+├── README.md
+├── ARCHITECTURE.md
+├── INSTALL_QGIS.md
+├── INSTALL_QFIELD.md
+├── USER_GUIDE.md
+├── SURVEY_GUIDE.md
+├── GNSS_GUIDE.md
+├── COGO_GUIDE.md
+├── QC_GUIDE.md
+├── OFFLINE_GUIDE.md
+├── SYNC_GUIDE.md
+├── TROUBLESHOOTING.md
+└── FINAL_REPORT.md
+
+---
+
+# 53. Final Report
+
+گزارش نهایی باید دقیقاً مشخص کند:
+
+## QGIS
+
+* چه قابلیت‌هایی پیاده شد؟
+* چه قابلیت‌هایی تست شد؟
+* چه قابلیت‌هایی محدودیت دارند؟
+
+## QField
+
+* چه قابلیت‌هایی پیاده شد؟
+* چه قابلیت‌هایی تست شد؟
+* چه قابلیت‌هایی محدودیت دارند؟
+
+## مشترک
+
+* Architecture
+* Data Model
+* Sync
+* QC
+* GNSS
+* GNAF
+* COGO
+* Agent Architecture
+
+---
+
+# 54. مهم‌ترین قانون گزارش
+
+هرگز ننویس:
+
+"Completed"
+
+مگر اینکه واقعاً تست شده باشد.
+
+هر قابلیت را با یکی از وضعیت‌های زیر مشخص کن:
+
+[IMPLEMENTED + TESTED]
+
+[IMPLEMENTED + NOT FULLY TESTED]
+
+[PARTIALLY IMPLEMENTED]
+
+[DEPENDENCY REQUIRED]
+
+[PLATFORM LIMITATION]
+
+[NOT IMPLEMENTED]
+
+---
+
+# 55. Autonomous Engineering Workflow
+
+قبل از تغییر فایل‌ها:
+
+مرحله 1:
+READ-ONLY AUDIT
+
+ابتدا کل Repository / فایل‌های موجود را بررسی کن.
+
+هیچ فایلی را در این مرحله تغییر نده.
+
+بررسی:
+
+* Existing source
+* Existing plugin
+* Existing QML
+* Existing Python
+* Existing metadata
+* Existing project
+* Existing assets
+* Existing tests
+* Existing ZIP
+* Existing configuration
+
+---
+
+مرحله 2:
+COMPATIBILITY AUDIT
+
+QGIS 4.2.1
+
+QField 4.3.3
+
+را بررسی کن.
+
+---
+
+مرحله 3:
+ARCHITECTURE PLAN
+
+ساختار دقیق دو محصول را ارائه کن.
+
+---
+
+مرحله 4:
+IMPLEMENTATION PLAN
+
+Featureها را اولویت‌بندی کن.
+
+---
+
+مرحله 5:
+IMPLEMENTATION
+
+کد واقعی بنویس.
+
+---
+
+مرحله 6:
+BUILD
+
+Build واقعی.
+
+---
+
+مرحله 7:
+TEST
+
+Test واقعی.
+
+---
+
+مرحله 8:
+FIX
+
+تمام Errorهای واقعی را برطرف کن.
+
+---
+
+مرحله 9:
+PACKAGE
+
+دو ZIP واقعی بساز.
+
+---
+
+مرحله 10:
+VERIFY
+
+ZIPها را Extract و ساختارشان را دوباره بررسی کن.
+
+---
+
+مرحله 11:
+FINAL REPORT
+
+گزارش کامل بده.
+
+---
+
+# 56. No Blind Coding
+
+اگر Repository موجود است:
+
+هرگز فایل‌ها را کورکورانه Overwrite نکن.
+
+اول:
+
+Inspect
+Analyze
+Plan
+Modify
+
+---
+
+# 57. Preserve Existing Work
+
+اگر نسخه قبلی پروژه وجود دارد:
+
+قابلیت‌های سالم را حفظ کن.
+
+کد سالم را بدون دلیل بازنویسی نکن.
+
+قبل از تغییر:
+
+Backup / Git Commit / Copy
+
+در صورت امکان انجام شود.
+
+---
+
+# 58. QML Strictness
+
+در QML:
+
+* Syntax را دقیق بررسی کن.
+* Semicolonهای نامعتبر را حذف کن.
+* Duplicate Property را حذف کن.
+* Unknown Module را استفاده نکن.
+* Unsupported Import را استفاده نکن.
+* APIهایی که در QField 4.3.3 وجود ندارند استفاده نکن.
+
+قبل از تحویل:
+
+QML Parse Check
+
+اجرا کن.
+
+هیچ:
+
+Unexpected token
+Property value set multiple times
+module not installed
+Unknown property
+Unknown signal
+
+نباید باقی بماند.
+
+---
+
+# 59. No Fake Compatibility
+
+اگر یک API در QGIS 4.2.1 وجود ندارد:
+
+از آن استفاده نکن.
+
+اگر API در QField 4.3.3 وجود ندارد:
+
+از آن استفاده نکن.
+
+به‌جای حدس:
+
+نسخه واقعی API را بررسی کن.
+
+---
+
+# 60. Persian Language
+
+UI تا حد امکان فارسی باشد.
+
+عبارات فنی مهم می‌توانند English + Persian باشند.
+
+مثلاً:
+
+دقت GNSS — Accuracy
+
+نوع Fix — Fix Type
+
+سیستم مختصات — CRS
+
+---
+
+# 61. Coordinate Display
+
+در محیط Survey:
+
+X
+Y
+Z
+
+اولویت نمایش داشته باشد.
+
+در تنظیمات:
+
+Coordinate Display Mode
+
+قابل تغییر باشد.
+
+---
+
+# 62. User Experience
+
+هدف:
+
+کاربر نقشه‌بردار بتواند بدون آموزش طولانی:
+
+Project
+→ Job
+→ GNSS
+→ Survey
+→ QC
+→ Save
+
+را انجام دهد.
+
+---
+
+# 63. Professional Survey Workflow
+
+Workflow اصلی:
+
+Open Project
+↓
+Check CRS
+↓
+Select Job
+↓
+Check GNSS
+↓
+Check Accuracy
+↓
+Start Survey
+↓
+Capture
+↓
+Validate
+↓
+QC
+↓
+Save
+↓
+Sync / Export
+↓
+Final QC
+↓
+Report
+
+---
+
+# 64. Acceptance Criteria
+
+پروژه فقط زمانی PASS است که:
+
+### Desktop
+
+* Plugin Load
+* UI Load
+* Project Access
+* Layer Access
+* Point
+* Line
+* Polygon
+* Geometry
+* COGO
+* QC
+* Import
+* Export
+* CRS
+* Job
+* Report
+
+کار کنند.
+
+### Mobile
+
+* Plugin Load
+* UI Load
+* Project
+* Point
+* Line
+* Polygon
+* GPS
+* GNSS if supported
+* Accuracy
+* Forms
+* Photo
+* Offline
+* Save
+* Sync/Transfer
+
+کار کنند.
+
+---
+
+# 65. Final Deliverables
+
+در پایان حتماً این موارد را تحویل بده:
+
+## 1. QGIS ZIP
+
+GeoSurveyDesktop-QGIS-4.2.1-vX.X.X.zip
+
+## 2. QField ZIP
+
+GeoSurveyFieldTools-QField-4.3.3-vX.X.X.zip
+
+## 3. Documentation
+
+تمام مستندات.
+
+## 4. Test Report
+
+نتیجه واقعی تست‌ها.
+
+## 5. Compatibility Report
+
+QGIS 4.2.1
+QField 4.3.3
+
+## 6. SHA-256
+
+برای هر ZIP.
+
+## 7. Installation Guide
+
+مراحل نصب Desktop.
+
+مراحل نصب QField.
+
+## 8. User Guide
+
+راهنمای عملی نقشه‌بردار.
+
+---
+
+# 66. Final Response Format
+
+در پایان پاسخ خود را دقیقاً با این ساختار بده:
+
+# PROJECT FINAL RESULT
+
+STATUS:
+PASS / PARTIAL / BLOCKED
+
+## 1. Architecture
+
+## 2. QGIS Desktop
+
+Version:
+4.2.1
+
+Status:
+
+## 3. QField
+
+Version:
+4.3.3
+
+Status:
+
+## 4. Implemented Features
+
+## 5. Tested Features
+
+## 6. Known Limitations
+
+## 7. QGIS ZIP
+
+Filename:
+...
+
+SHA-256:
+...
+
+Size:
+...
+
+## 8. QField ZIP
+
+Filename:
+...
+
+SHA-256:
+...
+
+Size:
+...
+
+## 9. Installation
+
+QGIS:
+...
+
+QField:
+...
+
+## 10. Test Results
+
+Report exact results.
+
+Example:
+
+QGIS:
+42/42 PASS
+
+QField:
+35/38 PASS
+3 BLOCKED
+
+هرگز عدد تست را بدون اجرای واقعی تولید نکن.
+
+## 11. Remaining Work
+
+Only real remaining work.
+
+## 12. Technical Notes
+
+Dependencies / API limitations / Platform limitations.
+
+---
+
+# 67. FINAL HARD RULES
+
+1. حدس نزن.
+2. قابلیت نساز که API آن وجود ندارد.
+3. Fake Feature ممنوع.
+4. Fake GNSS ممنوع.
+5. Fake Sync ممنوع.
+6. Fake COGO ممنوع.
+7. Fake QC ممنوع.
+8. Fake AI ممنوع.
+9. Fake Offline ممنوع.
+10. Fake Map Download ممنوع.
+11. Fake Camera ممنوع.
+12. Fake Report ممنوع.
+13. Toast-only implementation ممنوع.
+14. Coming Soon ممنوع.
+15. دکمه بدون عملکرد واقعی ممنوع.
+16. Error پنهان ممنوع.
+17. Test جعلی ممنوع.
+18. گزارش جعلی ممنوع.
+19. SHA-256 جعلی ممنوع.
+20. ZIP جعلی ممنوع.
+21. Compatibility جعلی ممنوع.
+22. هیچ قابلیت حساس بدون Permission و Audit اجرا نشود.
+23. هیچ داده‌ای بدون Validation ذخیره نشود.
+24. هیچ تغییر مهمی بدون Backup/Version Control انجام نشود.
+25. اگر چیزی امکان‌پذیر نیست، صریحاً اعلام کن.
+
+---
+
+# 68. مهم‌ترین دستور
+
+من دو خروجی مستقل می‌خواهم:
+
+A — QGIS Desktop Plugin
+برای QGIS Desktop 4.2.1
+
+B — QField Mobile Plugin / Package
+برای QField 4.3.3
+
+این دو باید:
+
+* مستقل باشند.
+* واقعاً قابل استفاده باشند.
+* از قابلیت‌های واقعی Platform استفاده کنند.
+* با یک Data Model منطقی هماهنگ باشند.
+* در صورت وجود Backend بتوانند به آن متصل شوند.
+* Offline Workflow داشته باشند.
+* قابلیت انتقال داده بین Desktop و Mobile را داشته باشند.
+
+در پایان باید دو ZIP واقعی و قابل استفاده تحویل داده شود.
+
+شروع کار:
+
+FIRST:
+READ-ONLY AUDIT
+
+THEN:
+COMPATIBILITY CHECK
+
+THEN:
+ARCHITECTURE
+
+THEN:
+IMPLEMENTATION
+
+THEN:
+BUILD
+
+THEN:
+TEST
+
+THEN:
+FIX
+
+THEN:
+PACKAGE
+
+THEN:
+VERIFY
+
+THEN:
+FINAL REPORT
+
+تا زمانی که هر مرحله واقعاً انجام نشده است، ادعا نکن که پروژه کامل شده است.

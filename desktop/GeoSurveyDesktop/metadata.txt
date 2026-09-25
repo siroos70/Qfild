@@ -1,0 +1,14 @@
+[general]
+name=GeoSurveyDesktop
+description=Enterprise Survey & GIS Control Center for QGIS Desktop
+version=1.0.0
+qgisMinimumVersion=4.0
+author=GeoSurvey Team
+email=geosurvey@example.com
+category=Survey
+icon=icons/survey_icon.svg
+about=Enterprise-grade survey, COGO, QC, GNAF, Cadastre and GNSS plugin for QGIS Desktop 4.2.1
+tags=survey,cogo,qc,gnss,cadastre,gmaf,offline,field,sync
+
+[homepage]
+email=geosurvey@example.com

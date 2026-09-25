@@ -1,0 +1,164 @@
+import QtQuick 2.0
+import QtQuick.Controls 2.0
+import QtQuick.Layouts 1.1
+
+ApplicationWindow {
+    id: root
+    visible: true
+    width: 400
+    height: 700
+    title: "GeoSurvey Field Tools"
+
+    property var surveyManager: null
+    property var currentX: 0.0
+    property var currentY: 0.0
+    property var currentZ: 0.0
+    property var currentAccuracy: 0.0
+    property var currentHdop: 0.0
+    property var currentFix: "NONE"
+    property var currentSatellites: 0
+    property var qualityStatus: "GOOD"
+
+    header: ToolBar {
+        Label {
+            text: "GeoSurvey"
+            anchors.verticalCenter: parent.verticalCenter
+            font.bold: true
+            font.pointSize: 16
+        }
+    }
+
+    StackView {
+        id: stackView
+        anchors.fill: parent
+        initialItem: surveyPage
+    }
+
+    Component {
+        id: surveyPage
+        Page {
+            title: "Survey"
+            Flickable {
+                anchors.fill: parent
+                contentWidth: width
+                contentHeight: contentItem.implicitHeight
+                Column {
+                    width: parent.width
+                    spacing: 12
+                    GroupBox {
+                        title: "GNSS Status"
+                        width: parent.width
+                        Column {
+                            anchors.fill: parent
+                            spacing: 8
+                            Label { text: "X: " + root.currentX.toFixed(3); font.bold: true }
+                            Label { text: "Y: " + root.currentY.toFixed(3); font.bold: true }
+                            Label { text: "Z: " + root.currentZ.toFixed(3); font.bold: true }
+                            Label { text: "Accuracy: " + root.currentAccuracy.toFixed(3) + " m" }
+                            Label { text: "HDOP: " + root.currentHdop.toFixed(2) }
+                            Label { text: "Fix: " + root.currentFix }
+                            Label { text: "Satellites: " + root.currentSatellites }
+                            Label { text: "Quality: " + root.qualityStatus; font.bold: true }
+                        }
+                    }
+                    GroupBox {
+                        title: "Capture"
+                        width: parent.width
+                        Row {
+                            anchors.fill: parent
+                            spacing: 8
+                            Button {
+                                text: "Point"
+                                onClicked: { if (root.surveyManager) { root.surveyManager.set_capture_mode("point"); } }
+                            }
+                            Button {
+                                text: "Line"
+                                onClicked: { if (root.surveyManager) { root.surveyManager.set_capture_mode("line"); } }
+                            }
+                            Button {
+                                text: "Polygon"
+                                onClicked: { if (root.surveyManager) { root.surveyManager.set_capture_mode("polygon"); } }
+                            }
+                        }
+                    }
+                    Button {
+                        text: "Capture Current Position"
+                        width: parent.width
+                        onClicked: {
+                            if (root.surveyManager) {
+                                root.surveyManager.capture_point(root.currentX, root.currentY, root.currentZ, root.currentAccuracy, root.currentHdop, root.currentFix);
+                            }
+                        }
+                    }
+                    Button {
+                        text: "Jobs"
+                        width: parent.width
+                        onClicked: { stackView.push(jobsPage); }
+                    }
+                    Button {
+                        text: "Settings"
+                        width: parent.width
+                        onClicked: { stackView.push(settingsPage); }
+                    }
+                }
+            }
+        }
+    }
+
+    Component {
+        id: jobsPage
+        Page {
+            title: "Jobs"
+            ListView {
+                anchors.fill: parent
+                model: []
+                delegate: Item {
+                    width: parent.width
+                    height: 60
+                    Column {
+                        Label { text: modelData.name; font.bold: true }
+                        Label { text: "Project: " + modelData.project }
+                        Label { text: "Status: " + modelData.status }
+                    }
+                }
+            }
+            Button {
+                text: "Back"
+                anchors.bottom: parent.bottom
+                onClicked: { stackView.pop(); }
+            }
+        }
+    }
+
+    Component {
+        id: settingsPage
+        Page {
+            title: "Settings"
+            Flickable {
+                anchors.fill: parent
+                contentWidth: width
+                contentHeight: contentItem.implicitHeight
+                Column {
+                    width: parent.width
+                    spacing: 12
+                    Label { text: "Accuracy Threshold" }
+                    Slider {
+                        from: 0.01
+                        to: 1.0
+                        value: 0.05
+                    }
+                    Label { text: "HDOP Threshold" }
+                    Slider {
+                        from: 0.5
+                        to: 10.0
+                        value: 1.5
+                    }
+                }
+            }
+            Button {
+                text: "Back"
+                onClicked: { stackView.pop(); }
+            }
+        }
+    }
+}

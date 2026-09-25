@@ -1,0 +1,27 @@
+[general]
+name=GeoSurveyFieldTools
+version=1.0.0
+description=Enterprise Survey & GIS Field Tools for QField 4.3.3
+author=GeoSurvey Team
+email=geosurvey@example.com
+category=Survey
+icon=icon.svg
+about=Enterprise-grade field survey, GNSS, COGO, QC, Offline and Sync tools for QField 4.3.3
+tags=survey,gnss,cogo,qc,offline,field,sync,cadastre
+
+[dependencies]
+qgisVersionMin=4.3.3
+pyqgisVersionMin=4.3.3
+
+[android]
+permissions=android.permission.ACCESS_FINE_LOCATION
+permissions=android.permission.ACCESS_COARSE_LOCATION
+permissions=android.permission.CAMERA
+permissions=android.permission.RECORD_AUDIO
+permissions=android.permission.WRITE_EXTERNAL_STORAGE
+permissions=android.permission.READ_EXTERNAL_STORAGE
+permissions=android.permission.BLUETOOTH
+permissions=android.permission.BLUETOOTH_ADMIN
+
+[ui]
+main=ui/main_panelqml
